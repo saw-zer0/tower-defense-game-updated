@@ -14,29 +14,61 @@ class Canvas {
         this.image = new Image();
         this.image.src = './images/sprite-sheet.png'
         this.image.onload = () => {
-
-            this.mouseX = 0;
-            this.mouseY = 0
-            this.projectileArr = [];
-            this.enemiesArr = [];
-
-            this.pickupGenerationCounter = 0;
-
-            this.score = {
-                'bigwolf': 0,
-                'drone': 0
-            };
-            this.slingShotCenter = [120, 164];
-            this.mouseEvent();
-
+            this.drawBg();
             this.forceField = new Circle(-750, this.canvas.height / 1.5, this.canvas.width, 0, 0);
             this.generatePlayer();
+            this.player1.draw();
+            let startBtn = document.getElementById('start-button');
+            let instructionBtn = document.getElementById('instruction-button');
+            let restartBtn = document.getElementsByClassName('restart-button');
+            let homeBtn = document.getElementsByClassName('home-button');
+            let nextBtn = document.getElementById('next-button');
+            let startScreen = document.getElementById('start-screen');
+            let instructionScreen = document.getElementById('instruction-screen');
+            let levelScreen = document.getElementById('level-clear-screen');
 
-            this.forceField.health = 150;
-            this.refreshScreen();
 
+            startBtn.addEventListener('click', () => {
+                this.startGame();
+                startScreen.style.display = 'none';
+            })
 
+            instructionBtn.addEventListener('click', () => {
+                startScreen.style.display = 'none';
+                instructionScreen.style.display = 'flex';
+            })
+
+            Array.from(homeBtn).forEach(elem => {
+                elem.addEventListener('click', () => {
+                    startScreen.style.display = 'flex';
+                    instructionScreen.style.display = 'none';
+                    levelScreen.style.display = 'none';
+                })
+            })
         }
+    }
+
+    startGame() {
+        this.mouseX = 0;
+        this.mouseY = 0
+        this.projectileArr = [];
+        this.enemiesArr = [];
+
+        this.pickupGenerationCounter = 0;
+
+        this.score = {
+            'bigwolf': 0,
+            'drone': 0
+        };
+        this.slingShotCenter = [120, 164];
+        this.mouseEvent();
+
+
+        this.forceField.health = 150;
+        this.refreshScreen();
+
+
+
     }
 
     drawBg() {
@@ -202,7 +234,7 @@ class Canvas {
                     this.projectileArr.shift();
                 }, 100);
                 firstElement.setTimer = true;
-            }else{
+            } else {
                 setTimeout(() => {
                     this.projectileArr.shift();
                 }, 497);
@@ -235,7 +267,7 @@ class Canvas {
             this.enemiesArr.forEach((elem) => {
                 elem.update();
 
-                if (elem.x < 490 && elem.type !== 'drone') {
+                if (elem.x < 490 && elem.type !== 'drone' && elem.type !== 'dying wolf') {
                     elem.type = 'attacking wolf'
                 }
 

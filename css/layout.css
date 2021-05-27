@@ -14,7 +14,7 @@ body{
 }
 
 #start-screen{
-    display: none;
+    display: flex;
 }
 
 #end-screen{

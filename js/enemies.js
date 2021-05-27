@@ -42,6 +42,10 @@ class Enemy extends Animatable {
                 this.cryCount = 0;
             }
         }
+
+        if (this.type === 'dead wolf') {
+            this.damage();
+        }
     }
 
     gravity() {
@@ -101,10 +105,16 @@ class FlyingEnemy extends Enemy {
             this.friction();
         }
 
-        if(this.y > this.floorHeight){
+        if (this.y > this.floorHeight) {
             this.dead = true;
         }
 
     }
 
+}
+
+class blocks extends Animatable{
+    constructor(imageObject, x, y, width, height, dx = 0, dy = 0){
+        super(imageObject, x, y, width, height, dx = 0, dy = 0, floorHeight = Constants.FLOORHEIGHT)
+    }
 }
