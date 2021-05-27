@@ -7,12 +7,6 @@ class Canvas {
         this.ctx = canvas.getContext('2d');
         window.gfx = this.ctx;
 
-        this.mouseX = 0;
-        this.mouseY = 0
-        this.projectileArr = [];
-        this.enemiesArr = [];
-
-        this.pickupGenerationCounter = 0;
         this.init();
     }
 
@@ -20,6 +14,14 @@ class Canvas {
         this.image = new Image();
         this.image.src = './images/sprite-sheet.png'
         this.image.onload = () => {
+
+            this.mouseX = 0;
+            this.mouseY = 0
+            this.projectileArr = [];
+            this.enemiesArr = [];
+
+            this.pickupGenerationCounter = 0;
+
             this.score = {
                 'bigwolf': 0,
                 'drone': 0
@@ -81,6 +83,29 @@ class Canvas {
 
     }
 
+    generateBomb() {
+        if (this.bombTimeout === true) { return }
+        setTimeout(() => {
+            this.bombTimeout = false;
+        }, 500);
+        this.bombTimeout = true;
+        let p = imagePosition.bomb[0];
+        let x = p[0];
+        let y = p[1];
+        let w = p[2];
+        let h = p[3];
+        let imgObj = {
+            'x': x,
+            'y': y,
+            'width': w,
+            'height': h,
+            'image': this.image
+        }
+
+        let bomb = new Bomb(imgObj, 120, 300, w, h);
+        this.projectileArr.push(bomb);
+    }
+
     generateEnemies() {
         let imgPos = imagePosition.bigWolf[0];
         let x = imgPos[0],
@@ -94,7 +119,7 @@ class Canvas {
             'height': h,
             'image': this.image
         }
-        let enemy = new Enemy(imgObj, this.canvas.width, Constants.FLOORHEIGHT - h, w, h);
+        let enemy = new Enemy(imgObj, this.canvas.width, Constants.FLOORHEIGHT - h, imgObj.width, imgObj.heighth);
         this.enemiesArr.push(enemy)
     }
 
@@ -141,15 +166,14 @@ class Canvas {
 
     mouseEvent() {
         this.canvas.addEventListener('mousemove', (event) => {
-            this.mouseX = event.clientX;
-            this.mouseY = event.clientY;
+            this.mouseX = event.clientX - (this.canvas.offsetLeft);
+            this.mouseY = event.clientY - this.canvas.offsetTop;
+            console.log(this.mouseX, this.mouseY)
         })
-        this.canvas.addEventListener('mousedown', () => {
+        this.canvas.addEventListener('mousedown', (event) => {
+            if (event.button !== 0) { return }
             if (getDistance(this.mouseX, this.mouseY, this.slingShotCenter[0], this.slingShotCenter[1]) <= 50) {
-                if (this.projectileArr.length < 10) {
-                    this.generateProjectile();
-                }
-
+                this.generateProjectile();
             }
         })
         this.canvas.addEventListener('mouseup', () => {
@@ -161,7 +185,10 @@ class Canvas {
                 }
             })
         })
-
+        window.addEventListener('keydown', (event) => {
+            if (event.key !== ' ') { return };
+            this.generateBomb();
+        })
     }
 
     selfDestructProjectiles() {
@@ -170,10 +197,17 @@ class Canvas {
             this.projectileArr.shift();
         }
         else if (firstElement.dx === 0 && firstElement.dy === 0 && firstElement.launched === 2 && firstElement.setTimer === undefined) {
-            setTimeout(() => {
-                this.projectileArr.shift();
-            }, 100);
-            firstElement.setTimer = true;
+            if (firstElement.type !== 'bomb') {
+                setTimeout(() => {
+                    this.projectileArr.shift();
+                }, 100);
+                firstElement.setTimer = true;
+            }else{
+                setTimeout(() => {
+                    this.projectileArr.shift();
+                }, 497);
+            }
+
         }
     }
 
@@ -181,7 +215,10 @@ class Canvas {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawBg();
         this.player1.draw();
-
+        this.player1.drawCanon();
+        if (this.bomb) {
+            this.bomb.update();
+        }
 
         this.forceField.draw();
 
@@ -189,9 +226,9 @@ class Canvas {
             this.projectileArr.forEach(elem => {
                 elem.update(this.mouseX, this.mouseY);
             })
+
             this.selfDestructProjectiles();
         }
-
         this.conditionToGenerateEnemy();
 
         if (this.enemiesArr.length > 0) {
@@ -207,7 +244,22 @@ class Canvas {
                 let rect = new Box(elem.x, elem.y, elem.x + elem.width - 40, elem.y, elem.height - 10, elem.dx, elem.dy);
                 if (this.projectileArr.length > 0) {
                     this.projectileArr.forEach(projectile => {
-                        let circle = new Circle(projectile.x, projectile.y, projectile.width / 2, projectile.dx, projectile.dy);
+
+                        let circle;
+
+                        if (projectile.type !== 'bomb') {
+                            circle = new Circle(projectile.x, projectile.y, projectile.width / 2, projectile.dx, projectile.dy);
+
+                        } else {
+                            if (projectile.dx !== 0 || projectile.dy !== 0) {
+                                projectile.giveDamage = false;
+                            } else {
+                                projectile.giveDamage = true;
+                                projectile.launched = 2;
+                                circle = new Circle(projectile.x, projectile.y, projectile.width, projectile.dx, projectile.dy);
+                            }
+                        }
+
                         let collision;
                         if (projectile.giveDamage) {
                             collision = Collision.sat(rect, circle);
@@ -222,7 +274,7 @@ class Canvas {
 
                                 elem.type = 'crying wolf'
                                 elem.damage();
-                                if(elem.hitPoint === 0){
+                                if (elem.hitPoint === 0) {
                                     this.score.bigWolf += 1;
                                 }
                                 elem.dx = res.b1.vel.x / 1.3;
@@ -263,9 +315,9 @@ class Canvas {
             }
         });
 
-        // this.collisionTest();
 
         this.animate = window.requestAnimationFrame(this.refreshScreen.bind(this));
+
     }
 
 

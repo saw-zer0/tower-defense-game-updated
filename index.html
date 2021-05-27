@@ -26,16 +26,27 @@
 <body>
     <canvas id="canvas"></canvas>
 
-    <div id="start-screen">
-        <button id="start-button" class="button">Start Game</button>
-        <button id="instruction-button" class="button">Instructions</button>
+    <div id="start-screen" class="screen">
+        <h2 class="message">Revenge <br> of the <br> Pigs</h2>
+        <button id="start-button">Start Game</button>
+        <button id="instruction-button">Instructions</button>
     </div>
-    <div id="end-screen">
-        <h3>The Wolves got into your Home and ate YOU...</h3>
-        
-        <button class="restart-button" id="button">Yes</button>
-        <button class="home-button" id="button">No</button>
+    <div id="end-screen"class="screen">
+        <h2 class="message">The Wolves got into your Home <br> and ate YOU...</h2>
+        <h3 class="message">Play Again?</h3>
+        <button class="restart-button">Yes</button>
+        <button class="home-button">No</button>
     </div>
-    <div id="instruction-screen"></div>
+
+    <div id="level-clear-screen" class="screen">
+        <button id="next-button">Next Level</button>
+        <button class="restart-button">ReStart Level</button>
+        <button class="home-button">Main menu</button>
+
+    </div>
+    <div id="instruction-screen"class="screen">
+        <p class="instruction">Click left button and drag on slingshot to aim <br> Release To Fire</p>
+        <p class="instruction">Click right button to fire Secondary weapon</p>
+    </div>
 </body>
 </html>

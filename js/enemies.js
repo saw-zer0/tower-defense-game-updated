@@ -10,7 +10,7 @@ class Enemy extends Animatable {
         floorHeight = Constants.FLOORHEIGHT,
         type = 'bigWolf'
     ) {
-        super(imageObject, x, y, width, height, dx = -1, dy = 0, floorHeight = Constants.FLOORHEIGHT);
+        super(imageObject, x, y, imageObject.width, imageObject.height, dx = -1, dy = 0, floorHeight = Constants.FLOORHEIGHT);
         this.dead = false;
         this.hitPoint = 2;
         this.stuck;
@@ -69,7 +69,6 @@ class Enemy extends Animatable {
         } else {
             this.dead = true;
         }
-        console.log('damage')
     }
 
 }

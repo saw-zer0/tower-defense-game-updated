@@ -23,27 +23,32 @@ class Projectile extends Animatable {
             y = slingshotCenter[1] + vy / dist * strechedLength;
         }
 
-        
+
 
         if (this.launched === 0) {
+            let cx = slingshotCenter[0];
+            let cy = slingshotCenter[1];
+
             this.x = x - this.width / 2;
             this.y = y - this.height / 2;
-        }else if(this.launched === 1){
-            
+
+            Physics.lineProjection(this.x, this.y, cx, cy);
+        } else if (this.launched === 1) {
+
 
             let cx = slingshotCenter[0];
             let cy = slingshotCenter[1];
             let px = this.x;
             let py = this.y;
 
-            let velocityObj = Physics.projectileVelocity(px, py,cx, cy );
+            let velocityObj = Physics.projectileVelocity(px, py, cx, cy);
 
             this.dx = velocityObj.dx;
             this.dy = velocityObj.dy;
             this.launched = 2;
-        }else{
-            if(this.y <= Constants.FLOORHEIGHT)
-            this.gravity();
+        } else {
+            if (this.y <= Constants.FLOORHEIGHT)
+                this.gravity();
         }
         this.move();
         this.pos.x = this.x;
@@ -51,24 +56,22 @@ class Projectile extends Animatable {
         this.vel.x = this.dx;
         this.vel.y = this.dy;
 
-        if(this.checkFrame(2)){
+        if (this.checkFrame(2)) {
             this.changeFrame(this.imageObject.image);
         }
         this.increaseCounter();
     }
 
 
-    gravity(){
-        if(this.y + this.height >= this.floorHeight){
+    gravity() {
+        if (this.y + this.height >= this.floorHeight) {
             this.dy = 0;
             this.dx = 0;
             this.vel.x = 0;
             this.vel.y = 0;
-            // if(this.y > this.floorHeight){
-            //     this.dy = -1;
-            // }
-        }else{
-            this.dy += this.accDueToGracity;
+
+        } else {
+            this.dy += Constants.GRAVITY_ACC;
             this.vel.y = this.dy;
         }
     }
@@ -85,3 +88,32 @@ class Projectile extends Animatable {
 // }
 
 // console.log(findClosest(800, 800, 104, 203, 80));
+
+
+class Bomb extends Projectile {
+    constructor(imageObject, x = 104, y = 203, width, height, dx = 0, dy = 10, floorHeight = Constants.FLOORHEIGHT, type = 'bomb') {
+
+        super(imageObject, x, y, width, height, dx = 0, dy = 0, floorHeight = Constants.FLOORHEIGHT)
+        this.type = 'bomb';
+        this.dy -= 15;
+        this.dx = 8;
+        this.imagePosition = 0;
+    }
+
+    update() {
+        this.draw();
+        this.move();
+        
+        this.gravity();
+        if(this.dx === 0 && this.dy === 0){
+            if(this.checkFrame(4)){
+                this.changeFrame(this.imageObject.image);
+                this.imagePosition++;
+                if(this.imagePosition > imagePosition.bomb.length - 1){
+                    this.giveDamage = false;
+                }
+            }
+            this.increaseCounter();
+        }
+    }
+}
