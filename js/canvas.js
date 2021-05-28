@@ -12,8 +12,14 @@ class Canvas {
 
     init() {
         this.image = new Image();
+        this.soundBackground = new Sound('../assets/background.wav');
+        this.soundExplode = new Sound('../assets/bomb.wav');
+        this.soundSwosh = new Sound('./assets/swoosh.wav');
+        this.soundCry = new Sound('./assets/cry.wav');
+        this.soundCrash = new Sound('./assets/crash.wav');
         this.image.src = './images/sprite-sheet.png'
         this.image.onload = () => {
+            this.soundBackground.play()
             this.drawBg();
             this.forceField = new Circle(-750, this.canvas.height / 1.5, this.canvas.width, 0, 0);
             this.generatePlayer();
@@ -249,7 +255,6 @@ class Canvas {
         this.canvas.addEventListener('mousemove', (event) => {
             this.mouseX = event.clientX - (this.canvas.offsetLeft);
             this.mouseY = event.clientY - this.canvas.offsetTop;
-            console.log(this.mouseX, this.mouseY)
         })
         this.canvas.addEventListener('mousedown', (event) => {
             if (event.button !== 0) { return }
@@ -265,6 +270,7 @@ class Canvas {
 
                 }
             })
+            this.soundSwosh.play();
         })
         window.addEventListener('keydown', (event) => {
             if (event.key !== ' ') { return };
@@ -370,6 +376,7 @@ class Canvas {
                             } else {
                                 projectile.giveDamage = true;
                                 projectile.launched = 2;
+                                this.soundExplode.play();
                                 circle = new Circle(projectile.x, projectile.y, projectile.width, projectile.dx, projectile.dy);
                             }
                         }
@@ -385,7 +392,7 @@ class Canvas {
                             if (elem.type !== 'drone') {
 
                                 projectile.giveDamage = false;
-
+                                this.soundCry.play();
                                 elem.type = 'crying wolf'
                                 elem.damage();
                                 if (elem.hitPoint === 0) {
@@ -403,6 +410,7 @@ class Canvas {
                                     this.forceField.health = 150;
                                 }
                                 this.score.drone += 1;
+                                this.soundCrash.play();
                             }
 
                         }
