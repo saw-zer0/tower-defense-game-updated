@@ -15,6 +15,7 @@ class Box {
 
         this.pos = new Vector(x1 + this.length / 2, y1 + w / 2);
         this.vel = new Vector(dx, dy);
+        
     }
 
     draw() {
@@ -42,10 +43,11 @@ class Circle {
         this.vertex.push(this.center);
         this.pos = new Vector(x, y);
         this.vel = new Vector(dx, dy);
+        this.color = 'rgba(255, 255, 255, 30%)';
     }
 
     draw() {
-        gfx.strokeStyle = 'rgba(255, 255, 255, 30%)';
+        gfx.strokeStyle = this.color;
         gfx.lineWidth = 100;
         gfx.beginPath();
         gfx.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
@@ -55,7 +57,7 @@ class Circle {
 }
 
 class Collision {
-    static sat(box, circle) {
+    static satBoxCircle(box, circle) {
         let axes1 = [];
         let axes2 = [];
         axes1.push(box.dir.normal());
@@ -101,6 +103,41 @@ class Collision {
         return true;
     }
 
+
+    static satBoxBox(box1, box2) {
+        let axes1 = [];
+        let axes2 = [];
+        axes1.push(box1.dir.normal());
+        axes1.push(box1.dir);
+
+        //find the closest vertex of box to center of circle, subtract vector from center, get normal of that vector=cv
+
+
+        axes2.push(box2.dir.normal());
+        axes2.push(box2.dir);
+
+        for (let i = 0; i < axes1.length; i++) {
+            let projection1 = this.projectBoxOnAxis(axes1[i], box1);
+            let projection2 = this.projectBoxOnAxis(axes1[i], box2);
+            let overlap = Math.min(projection1.max, projection2.max) - Math.max(projection1.min, projection2.min);
+            if (overlap < 0) {
+                return false;
+            }
+
+        }
+
+        for (let i = 0; i < axes2.length; i++) {
+            let projection1 = this.projectBoxOnAxis(axes2[i], box1);
+            let projection2 = this.projectBoxOnAxis(axes2[i], box2);
+            let overlap = Math.min(projection1.max, projection2.max) - Math.max(projection1.min, projection2.min);
+            if (overlap < 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     static projectBoxOnAxis(axis, object) {
         let min = Vector.dotProduct(axis, object.vertex[0]);
         let max = min;
@@ -129,11 +166,11 @@ class Collision {
 
 
 class CollisionResponse {
-    static collisionResponse(b1, b2) {
+    static collisionResponse(object1, object2) {
         //collision normal vector
-        let normal = b1.pos.subVector(b2.pos).unit();
+        let normal = object1.pos.subVector(object2.pos).unit();
         //relative velocity vector
-        let relVel = b1.vel.subVector(b2.vel);
+        let relVel = object1.vel.subVector(object2.vel);
         //separating velocity - relVel projected onto the collision normal vector
         let sepVel = Vector.dotProduct(relVel, normal);
         //the projection value after the collision (multiplied by -1)
@@ -142,10 +179,10 @@ class CollisionResponse {
         let sepVelVec = normal.multiplyVector(new_sepVel);
 
         //adding the separating velocity vector to the original vel. vector
-        b1.vel = b1.vel.addVector(sepVelVec);
+        object1.vel = object1.vel.addVector(sepVelVec);
         //adding its opposite to the other balls original vel. vector
-        b2.vel = b2.vel.addVector(sepVelVec.multiplyVector(-1));
-        return { b1, b2 }
+        object2.vel = object2.vel.addVector(sepVelVec.multiplyVector(-1));
+        return { 'b1':object1, 'b2':object2 }
 
     }
 }

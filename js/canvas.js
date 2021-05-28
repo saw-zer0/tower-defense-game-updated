@@ -18,6 +18,8 @@ class Canvas {
             this.forceField = new Circle(-750, this.canvas.height / 1.5, this.canvas.width, 0, 0);
             this.generatePlayer();
             this.player1.draw();
+            this.mouseEvent();
+
             let startBtn = document.getElementById('start-button');
             let instructionBtn = document.getElementById('instruction-button');
             let restartBtn = document.getElementsByClassName('restart-button');
@@ -26,6 +28,7 @@ class Canvas {
             let startScreen = document.getElementById('start-screen');
             let instructionScreen = document.getElementById('instruction-screen');
             let levelScreen = document.getElementById('level-clear-screen');
+            this.endScreen = document.getElementById('end-screen');
 
 
             startBtn.addEventListener('click', () => {
@@ -43,16 +46,28 @@ class Canvas {
                     startScreen.style.display = 'flex';
                     instructionScreen.style.display = 'none';
                     levelScreen.style.display = 'none';
+                    this.endScreen.style.display = 'none';
+                })
+            })
+
+            Array.from(restartBtn).forEach(elem => {
+                elem.addEventListener('click', () => {
+                    this.endScreen.style.display = 'none';
+                    this.startGame();
                 })
             })
         }
     }
 
     startGame() {
+        this.stopAnimation = false;
         this.mouseX = 0;
         this.mouseY = 0
         this.projectileArr = [];
         this.enemiesArr = [];
+        this.obstacleArr = [];
+        this.bossLevel = false;
+        this.enemyCount = 0;
 
         this.pickupGenerationCounter = 0;
 
@@ -61,8 +76,8 @@ class Canvas {
             'drone': 0
         };
         this.slingShotCenter = [120, 164];
-        this.mouseEvent();
 
+        this.forceField = new Circle(-750, this.canvas.height / 1.5, this.canvas.width, 0, 0);
 
         this.forceField.health = 150;
         this.refreshScreen();
@@ -112,14 +127,14 @@ class Canvas {
 
         let projectile = new Projectile(imgObj, this.mouseX - w / 2, this.mouseY - h / 2, w, h);
         this.projectileArr.push(projectile);
-
+        console.log(this.projectileArr)
     }
 
     generateBomb() {
         if (this.bombTimeout === true) { return }
         setTimeout(() => {
             this.bombTimeout = false;
-        }, 500);
+        }, 5000);
         this.bombTimeout = true;
         let p = imagePosition.bomb[0];
         let x = p[0];
@@ -179,7 +194,10 @@ class Canvas {
     }
 
     conditionToGenerateEnemy() {
-
+        if (this.enemyCount >= 10) { this.bossLevel = true }
+        if (this.bossLevel) {
+            return;
+        }
         if (this.enemiesArr.length > 0) {
 
             if (this.pickupGenerationCounter >= 1) {
@@ -193,6 +211,37 @@ class Canvas {
         }
         else {
             this.generateEnemies();
+        }
+    }
+
+    generateBlocks(xPos, yPos, type) {
+        let imgPos = imagePosition.blocks[type];
+        let x = imgPos[0],
+            y = imgPos[1],
+            w = imgPos[2],
+            h = imgPos[3];
+        let imgObj = {
+            'x': x,
+            'y': y,
+            'width': w,
+            'height': h,
+            'image': this.image
+        }
+
+
+        let block = new Blocks(imgObj, xPos, yPos, imgObj.width, imgObj.height);
+        this.obstacleArr.push(block);
+
+    }
+
+    conditionToGenerateBlocks() {
+        let blockPosArr = [
+            [600, 420, 1],
+            [900, 420, 0],
+        ];
+
+        for (let i = 0; i < blockPosArr.length; i++) {
+            this.generateBlocks(blockPosArr[i][0], blockPosArr[i][1], blockPosArr[i][2]);
         }
     }
 
@@ -248,6 +297,12 @@ class Canvas {
         this.drawBg();
         this.player1.draw();
         this.player1.drawCanon();
+        this.player1.drawHealthBar(this.forceField.health, 150);
+
+
+
+
+
         if (this.bomb) {
             this.bomb.update();
         }
@@ -262,12 +317,39 @@ class Canvas {
             this.selfDestructProjectiles();
         }
         this.conditionToGenerateEnemy();
+        // if (this.bossLevel && this.generateBossLevel === undefined) {
+        //     this.conditionToGenerateBlocks();
+        //     this.generateBossLevel = true;
+        // }
+        // if (this.obstacleArr.length > 0) {
+        //     this.obstacleArr.forEach(elem => {
+        //         elem.update()
 
+
+        //         let rect1 = new Box(elem.x, elem.y, elem.x + elem.width, elem.y, elem.height, elem.dx, elem.dy);
+        //         this.obstacleArr.forEach(obstacle => {
+        //             let rect2 = new Box(obstacle.x, obstacle.y, obstacle.x + obstacle.width, obstacle.y, obstacle.height, obstacle.dx, obstacle.dy);
+        //             let collision = Collision.satBoxBox(rect1, rect2);
+        //             if (collision) {
+        //                 let lower = (rect1.y < rect2.y) ? rect1 : rect2;
+        //                 let upper = (rect1.y > rect2.y) ? rect1 : rect2;
+
+        //                 let response = CollisionResponse.collisionResponse(rect1, rect2);
+
+        //                     elem.dx = response.b1.vel.x;
+        //                     elem.dy = response.b1.vel.y;
+        //                     obstacle.dx = response.b2.vel.x;
+        //                     obstacle.dy = response.b2.vel.y;
+        //             }
+        //         })
+        //     })
+        // }
         if (this.enemiesArr.length > 0) {
+
             this.enemiesArr.forEach((elem) => {
                 elem.update();
 
-                if (elem.x < 490 && elem.type !== 'drone' && elem.type !== 'dying wolf') {
+                if (elem.x < 490 && elem.type !== 'drone' && elem.type !== 'dead wolf') {
                     elem.type = 'attacking wolf'
                 }
 
@@ -294,7 +376,7 @@ class Canvas {
 
                         let collision;
                         if (projectile.giveDamage) {
-                            collision = Collision.sat(rect, circle);
+                            collision = Collision.satBoxCircle(rect, circle);
                         }
                         if (collision) {
                             let res = CollisionResponse.collisionResponse(rect, circle);
@@ -309,13 +391,17 @@ class Canvas {
                                 if (elem.hitPoint === 0) {
                                     this.score.bigWolf += 1;
                                 }
-                                elem.dx = res.b1.vel.x / 1.3;
-                                elem.dy = res.b1.vel.y / 1.3;
+                                elem.dx = res.b1.vel.x;
+                                elem.dy = res.b1.vel.y;
                             } else {
                                 elem.dy += 3;
                                 elem.dx += res.b2.vel.x;
                                 projectile.giveDamage = false;
-                                this.forceField.health += 25;
+                                if (this.forceField.health < 150) {
+                                    this.forceField.health += 25;
+                                } else if (this.forceField.health > 150) {
+                                    this.forceField.health = 150;
+                                }
                                 this.score.drone += 1;
                             }
 
@@ -326,14 +412,18 @@ class Canvas {
 
 
                 //check collision with forcefield
-                let collisionWithForceField = Collision.sat(rect, this.forceField)
+                let collisionWithForceField = Collision.satBoxCircle(rect, this.forceField)
                 if (collisionWithForceField) {
                     elem.dx += 20;
-                    this.forceField.health -= 1;
+                    this.forceField.health -= 10;
+                    if (this.forceField.health < 30) {
+                        this.forceField.color = 'rgba(100, 0, 0, 20%)';
+                    }
                     this.forceField.draw();
 
                     if (this.forceField.health <= 0) {
-                        console.log('gameOver')
+                        this.stopAnimation = true;
+                        this.endScreen.style.display = 'flex';
                     }
                 }
             })
@@ -349,7 +439,10 @@ class Canvas {
 
 
         this.animate = window.requestAnimationFrame(this.refreshScreen.bind(this));
+        if (this.stopAnimation) {
+            cancelAnimationFrame(this.animate);
 
+        }
     }
 
 
@@ -360,7 +453,7 @@ class Canvas {
         let circle = new Circle(this.mouseX, this.mouseY, 30);
         circle.draw();
 
-        let collision = Collision.sat(rect, circle);
+        let collision = Collision.satBoxCircle(rect, circle);
         if (collision) { console.log('collided') }
     }
 
