@@ -13,8 +13,10 @@ class Canvas {
     init() {
         this.image = new Image();
         this.soundBackground = new Sound('../assets/background.wav');
+        this.soundBackground.sound.loop = true;
         this.soundExplode = new Sound('../assets/bomb.wav');
         this.soundSwosh = new Sound('./assets/swoosh.wav');
+        this.soundSlash = new Sound('./assets/slash.mp3');
         this.soundCry = new Sound('./assets/cry.wav');
         this.soundCrash = new Sound('./assets/crash.wav');
         this.image.src = './images/sprite-sheet.png'
@@ -354,7 +356,9 @@ class Canvas {
 
             this.enemiesArr.forEach((elem) => {
                 elem.update();
-
+                if(elem.type === 'attacking wolf' && elem.currentImageIndex === 7){
+                    this.soundSlash.play();
+                }
                 if (elem.x < 490 && elem.type !== 'drone' && elem.type !== 'dead wolf') {
                     elem.type = 'attacking wolf'
                 }
