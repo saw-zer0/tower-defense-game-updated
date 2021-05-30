@@ -21,7 +21,7 @@ class Canvas {
         this.soundCrash = new Sound('./assets/crash.wav');
         this.image.src = './images/sprite-sheet.png'
         this.image.onload = () => {
-            this.soundBackground.play()
+            // this.soundBackground.play()
             this.drawBg();
             this.forceField = new Circle(-750, this.canvas.height / 1.5, this.canvas.width, 0, 0);
             this.generatePlayer();
@@ -74,8 +74,10 @@ class Canvas {
         this.projectileArr = [];
         this.enemiesArr = [];
         this.obstacleArr = [];
+        this.bossProjectileArr = [];
         this.bossLevel = false;
         this.enemyCount = 0;
+        this.generateEnemyCounter = 1;
 
         this.pickupGenerationCounter = 0;
 
@@ -83,10 +85,13 @@ class Canvas {
             'bigwolf': 0,
             'drone': 0
         };
-        this.slingShotCenter = [120, 164];
+        this.slingShotCenter = [140, 164];
+        this.targetRadius = 20;
 
         this.forceField = new Circle(-750, this.canvas.height / 1.5, this.canvas.width, 0, 0);
-
+        this.targetCurson = new Circle(this.slingShotCenter[0], this.slingShotCenter[1], this.targetRadius, 0, 0);
+        this.targetCurson.color = 'rgba(255, 0, 0, 70%)';
+        this.targetCurson.lineWidth = 3;
         this.forceField.health = 150;
         this.refreshScreen();
 
@@ -135,14 +140,13 @@ class Canvas {
 
         let projectile = new Projectile(imgObj, this.mouseX - w / 2, this.mouseY - h / 2, w, h);
         this.projectileArr.push(projectile);
-        console.log(this.projectileArr)
     }
 
     generateBomb() {
         if (this.bombTimeout === true) { return }
         setTimeout(() => {
             this.bombTimeout = false;
-        }, 5000);
+        }, 100);
         this.bombTimeout = true;
         let p = imagePosition.bomb[0];
         let x = p[0];
@@ -162,6 +166,7 @@ class Canvas {
     }
 
     generateEnemies() {
+        this.enemyCount++;
         let imgPos = imagePosition.bigWolf[0];
         let x = imgPos[0],
             y = imgPos[1],
@@ -174,15 +179,53 @@ class Canvas {
             'height': h,
             'image': this.image
         }
-        let enemy = new Enemy(imgObj, this.canvas.width, Constants.FLOORHEIGHT - h, imgObj.width, imgObj.heighth);
+        let gap = getRandom(0, 200);
+        let enemy = new Enemy(imgObj, this.canvas.width + gap, Constants.FLOORHEIGHT - h, imgObj.width, imgObj.heighth);
         this.enemiesArr.push(enemy)
+    }
+
+    generateBoss() {
+        let imgPos = imagePosition["boss run"][0];
+        let x = imgPos[0],
+            y = imgPos[1],
+            w = imgPos[2],
+            h = imgPos[3];
+        let imgObj = {
+            'x': x,
+            'y': y,
+            'width': w,
+            'height': h,
+            'image': this.image
+        }
+        let enemy = new Boss(imgObj, this.canvas.width, Constants.FLOORHEIGHT - h, imgObj.width, imgObj.heighth);
+        this.enemiesArr.push(enemy)
+
+    }
+
+    generateBossProjectile(xPos, yPos) {
+        let imgPos = imagePosition["boss projectile"][0];
+        let x = imgPos[0],
+            y = imgPos[1],
+            w = imgPos[2],
+            h = imgPos[3];
+        let imgObj = {
+            'x': x,
+            'y': y,
+            'width': w,
+            'height': h,
+            'image': this.image
+        };
+
+        let ball = new BossProjectile(imgObj, xPos - w / 2, yPos - h / 2, w, h);
+        this.bossProjectileArr.push(ball);
+
     }
 
     generatePickUpEnemies() {
 
         let random = Math.random();
         let imgPos;
-        if (random >= 0.7) {
+        if (random >= 0.8) {
             imgPos = imagePosition.drone[0];
 
             let x = imgPos[0],
@@ -202,17 +245,35 @@ class Canvas {
     }
 
     conditionToGenerateEnemy() {
-        if (this.enemyCount >= 10) { this.bossLevel = true }
+        //
+        if (this.enemyCount >= 30) { this.bossLevel = true }
         if (this.bossLevel) {
+            if (this.bossGenerated === undefined) {
+                this.generateBoss();
+                this.bossGenerated = true;
+            }
             return;
         }
+
+        this.generateEnemyCounter++;
         if (this.enemiesArr.length > 0) {
 
             if (this.pickupGenerationCounter >= 1) {
                 this.generatePickUpEnemies();
                 this.pickupGenerationCounter = 0;
             }
-            if (this.enemiesArr[this.enemiesArr.length - 1].x < this.canvas.width - 350) {
+            if(this.enemyCount %6 === 0){
+                this.enemyWave = true;
+            }else if(this.enemyCount % 15 === 0){
+                this.enemyWave = false;
+            }
+            if(this.enemyWave){
+                this.gapBetweenEnemy = 250;
+            }else{
+                this.gapBetweenEnemy = 500
+            }
+            if (this.generateEnemyCounter % this.gapBetweenEnemy === 0) {
+                this.generateEnemyCounter = 0;
                 this.generateEnemies();
                 this.pickupGenerationCounter++
             }
@@ -220,6 +281,23 @@ class Canvas {
         else {
             this.generateEnemies();
         }
+    }
+
+    conditionToGenerateBossProjectile() {
+        let boss = this.enemiesArr[this.enemiesArr.length - 1];
+        if (boss.type === 'boss attack' && boss.attacked === undefined && boss.imagePositionIndex === 2) {
+            this.generateBossProjectile(boss.x, boss.y);
+            boss.attacked = true;
+            console.log(boss.noOfShot)
+            boss.noOfShot--;
+            if (boss.noOfShot === 0) {
+                boss.relocate(700, 100);
+            }
+            setTimeout(() => {
+                boss.attacked = undefined;
+            }, 3000);
+        }
+
     }
 
     generateBlocks(xPos, yPos, type) {
@@ -260,7 +338,7 @@ class Canvas {
         })
         this.canvas.addEventListener('mousedown', (event) => {
             if (event.button !== 0) { return }
-            if (getDistance(this.mouseX, this.mouseY, this.slingShotCenter[0], this.slingShotCenter[1]) <= 50) {
+            if (getDistance(this.mouseX, this.mouseY, this.slingShotCenter[0], this.slingShotCenter[1]) <= this.targetRadius) {
                 this.generateProjectile();
             }
         })
@@ -268,11 +346,12 @@ class Canvas {
             this.projectileArr.forEach(elem => {
                 if (elem.launched === 0) {
                     elem.launched = 1;
+                    this.soundSwosh.play();
                     elem.update();
 
                 }
             })
-            this.soundSwosh.play();
+
         })
         window.addEventListener('keydown', (event) => {
             if (event.key !== ' ') { return };
@@ -306,7 +385,8 @@ class Canvas {
         this.player1.draw();
         this.player1.drawCanon();
         this.player1.drawHealthBar(this.forceField.health, 150);
-
+        this.forceField.draw();
+        this.targetCurson.draw();
 
 
 
@@ -315,53 +395,39 @@ class Canvas {
             this.bomb.update();
         }
 
-        this.forceField.draw();
+
 
         if (this.projectileArr.length > 0) {
             this.projectileArr.forEach(elem => {
                 elem.update(this.mouseX, this.mouseY);
+                if (this.enemiesArr.length === 0) {
+                    if (elem.type === 'bomb') {
+                        if (elem.dy === 0 && elem.dx === 0) {
+                            elem.launched = 2;
+                            this.soundExplode.play();
+                        }
+                    } else {
+                        if (elem.dy === 0 && elem.dx === 0 && elem.launched === 2) {
+                            elem.giveDamage === false;
+                        }
+                    }
+                }
             })
 
             this.selfDestructProjectiles();
         }
         this.conditionToGenerateEnemy();
-        // if (this.bossLevel && this.generateBossLevel === undefined) {
-        //     this.conditionToGenerateBlocks();
-        //     this.generateBossLevel = true;
-        // }
-        // if (this.obstacleArr.length > 0) {
-        //     this.obstacleArr.forEach(elem => {
-        //         elem.update()
 
 
-        //         let rect1 = new Box(elem.x, elem.y, elem.x + elem.width, elem.y, elem.height, elem.dx, elem.dy);
-        //         this.obstacleArr.forEach(obstacle => {
-        //             let rect2 = new Box(obstacle.x, obstacle.y, obstacle.x + obstacle.width, obstacle.y, obstacle.height, obstacle.dx, obstacle.dy);
-        //             let collision = Collision.satBoxBox(rect1, rect2);
-        //             if (collision) {
-        //                 let lower = (rect1.y < rect2.y) ? rect1 : rect2;
-        //                 let upper = (rect1.y > rect2.y) ? rect1 : rect2;
-
-        //                 let response = CollisionResponse.collisionResponse(rect1, rect2);
-
-        //                     elem.dx = response.b1.vel.x;
-        //                     elem.dy = response.b1.vel.y;
-        //                     obstacle.dx = response.b2.vel.x;
-        //                     obstacle.dy = response.b2.vel.y;
-        //             }
-        //         })
-        //     })
-        // }
         if (this.enemiesArr.length > 0) {
 
             this.enemiesArr.forEach((elem) => {
                 elem.update();
-                if(elem.type === 'attacking wolf' && elem.currentImageIndex === 7){
+                if (elem.type === 'attacking wolf' && elem.currentImageIndex === 7) {
+                    this.soundSlash.reset();
                     this.soundSlash.play();
                 }
-                if (elem.x < 490 && elem.type !== 'drone' && elem.type !== 'dead wolf') {
-                    elem.type = 'attacking wolf'
-                }
+
 
 
                 // collision with projectile detection and Response;
@@ -393,7 +459,7 @@ class Canvas {
                             let res = CollisionResponse.collisionResponse(rect, circle);
                             projectile.dx = res.b2.vel.x;
                             projectile.dy = res.b2.vel.y;
-                            if (elem.type !== 'drone') {
+                            if (elem.type !== 'drone' && elem.type.slice(0, 4) != 'boss') {
 
                                 projectile.giveDamage = false;
                                 this.soundCry.play();
@@ -404,7 +470,7 @@ class Canvas {
                                 }
                                 elem.dx = res.b1.vel.x;
                                 elem.dy = res.b1.vel.y;
-                            } else {
+                            } else if (elem.type.slice(0, 4) != 'boss') {
                                 elem.dy += 3;
                                 elem.dx += res.b2.vel.x;
                                 projectile.giveDamage = false;
@@ -441,6 +507,41 @@ class Canvas {
             })
         }
 
+        if (this.bossLevel) {
+            this.conditionToGenerateBossProjectile();
+            
+
+            if (this.bossProjectileArr.length) {
+                this.bossProjectileArr.forEach(elem => {
+                    elem.update();
+                    let ball = new Circle(elem.x, elem.y, elem.width - 10, elem.dx, elem.dy);
+                    let collisionWithForceField = Collision.circlecircle(this.forceField, ball);
+                    if (collisionWithForceField && elem.deactivate === undefined) {
+                        elem.deactivate = true;
+                        this.forceField.health -= 10;
+
+                        if (this.forceField.health < 30) {
+                            this.forceField.color = 'rgba(100, 0, 0, 10%)';
+                        }
+                        this.forceField.draw();
+
+                        if (this.forceField.health <= 0) {
+                            this.stopAnimation = true;
+                            this.endScreen.style.display = 'flex';
+                        }
+
+                    }
+                })
+            }
+        }
+
+
+        //remove inactive energy balls
+        this.bossProjectileArr = this.bossProjectileArr.filter(elem => {
+            if (!elem.deactivate || elem.x >= 200) {
+                return elem;
+            }
+        })
 
         //remove dead
         this.enemiesArr = this.enemiesArr.filter(elem => {
@@ -448,6 +549,7 @@ class Canvas {
                 return elem;
             }
         });
+
 
 
         this.animate = window.requestAnimationFrame(this.refreshScreen.bind(this));

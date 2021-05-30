@@ -44,11 +44,12 @@ class Circle {
         this.pos = new Vector(x, y);
         this.vel = new Vector(dx, dy);
         this.color = 'rgba(255, 255, 255, 30%)';
+        this.lineWidth = 100;
     }
 
     draw() {
         gfx.strokeStyle = this.color;
-        gfx.lineWidth = 100;
+        gfx.lineWidth = this.lineWidth;
         gfx.beginPath();
         gfx.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
         gfx.closePath();
@@ -161,6 +162,16 @@ class Collision {
         return { min, max };
     }
 
+
+    static circlecircle(object1, object2){
+        let distance = getDistance(object1.center.x, object1.center.y ,object2.center.x, object2.center.y)
+        let radiusSum = object1.radius + object2.radius;
+        if(distance <= radiusSum){
+            return true;
+        }else{
+            return false;
+        }
+    }
 
 }
 

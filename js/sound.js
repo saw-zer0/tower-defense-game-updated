@@ -3,7 +3,6 @@ class Sound{
         this.src = src;
         this.sound = document.createElement("audio");
         this.sound.src = src;
-        this.sound.audioLoop = true;
         this.sound.setAttribute("preload", "auto");
         this.sound.setAttribute("controls", "none");
         this.sound.style.display = "none";
@@ -16,5 +15,8 @@ class Sound{
     }
     stop(){
         this.sound.pause();
-    }    
+    }
+    reset(){
+        this.sound.currentTime = 0.02;
+    }
 }

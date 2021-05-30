@@ -12,7 +12,7 @@ class Projectile extends Animatable {
         this.draw();
 
 
-        let slingshotCenter = [120, 164];
+        let slingshotCenter = [140, 164];
         let strechedLength = 80;
         if (getDistance(x, y, slingshotCenter[0], slingshotCenter[1]) > 80) {
             // find the closest point on circle;

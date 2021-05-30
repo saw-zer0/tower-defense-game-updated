@@ -13,10 +13,10 @@ class Physics {
         let values = this.initialVelocity(x1,y1,x2,y2);
         for(let x = 0; x <= 300; x+=30){
             let firstPart = -Math.tan(values.angle) * x; 
-            let secondNumerator = Constants.GRAVITY_ACC * x * x;
+            let secondNumerator = x * x;
             let secondDenominator = 2 * values.v * Math.pow(Math.cos(values.angle),2)
             let y = firstPart - (secondNumerator/secondDenominator)/25;
-            this.drawDot(x+120, -y + 164);
+            this.drawDot(x+140, -y + 164);
         }
 
 

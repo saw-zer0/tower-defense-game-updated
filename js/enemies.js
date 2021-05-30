@@ -10,7 +10,7 @@ class Enemy extends Animatable {
         floorHeight = Constants.FLOORHEIGHT,
         type = 'bigWolf'
     ) {
-        super(imageObject, x, y, imageObject.width, imageObject.height, dx = -1, dy = 0, floorHeight = Constants.FLOORHEIGHT);
+        super(imageObject, x, y, imageObject.width, imageObject.height, dx, dy = 0, floorHeight = Constants.FLOORHEIGHT);
         this.dead = false;
         this.hitPoint = 2;
         this.stuck;
@@ -18,7 +18,6 @@ class Enemy extends Animatable {
         this.cryCount = 0;
         this.deadCount = 0;
         this.frameSpeed = 9;
-
     }
 
     update() {
@@ -29,18 +28,24 @@ class Enemy extends Animatable {
 
         if (this.checkFrame(this.frameSpeed)) {
             this.changeFrame(this.imageObject.image);
+
         }
         this.increaseCounter();
+
         if (!this.stuck) {
             this.friction();
         }
 
         if (this.type === 'crying wolf') {
             this.cryCount++;
-            if (this.cryCount > 50) {
+            if (this.cryCount > 40) {
                 this.type = 'bigWolf';
                 this.cryCount = 0;
             }
+        }
+
+        if (this.x < 490 && this.type !== 'drone' && this.type !== 'dead wolf') {
+            this.type = 'attacking wolf'
         }
 
         if (this.type === 'dead wolf') {
@@ -114,10 +119,12 @@ class FlyingEnemy extends Enemy {
         }
 
         if (this.y > this.floorHeight) {
+            
             this.dead = true;
         }
 
     }
+
 
 }
 
@@ -131,7 +138,6 @@ class Blocks extends Animatable{
     update(){
         this.draw();
         this.move();
-        this.friction();
     }
 
     friction() {
@@ -154,3 +160,99 @@ class Blocks extends Animatable{
 
 }
 
+class Boss extends Enemy{
+    constructor(
+        imageObject,
+        x,
+        y,
+        width,
+        height,
+        dx = -5,
+        dy = 0,
+        floorHeight = Constants.FLOORHEIGHT,
+        type = 'boss run'
+    ) {
+        super(imageObject, x, y, imageObject.width, imageObject.height, dx, dy = 0, floorHeight = Constants.FLOORHEIGHT);
+        this.dead = false;
+        this.hitPoint = 2;
+        this.stuck;
+        this.type = type;
+        this.punchCount = 0;
+        this.imagePositionIndex = 0;
+        this.frameSpeed = 4;
+        this.noOfShot = Math.floor(getRandom(1, 4));
+    }
+
+    update() {
+        this.draw();
+        this.move();
+        this.gravity();
+        this.friction();
+
+        if(this.x <= 750){
+            this.dx = 0;
+            this.type = 'boss attack';
+            this.frameSpeed = 6;
+
+        }
+
+        if(this.type === 'boss attack' && this.noOfShot ==0){
+            console.log('new set')
+            this.noOfShot = Math.floor(getRandom(1,4));
+        }
+
+
+        if (this.checkFrame(this.frameSpeed)) {
+            this.changeFrame(this.imageObject.image);
+            this.imagePositionIndex = (this.imagePositionIndex >= imagePosition['boss attack'].length - 1 ) ? 0 : this.imagePositionIndex+1;
+        }
+        this.increaseCounter();
+    }
+
+
+    
+    friction() {
+        if (this.dx > -5) {
+            this.dx -= 3;
+        } else {
+            this.dx = -5;
+        }
+    }
+
+    relocate(x, y){
+        this.x = x;
+        this.y = y;
+    }
+}
+
+class BossProjectile extends Animatable{
+    constructor(
+        imageObject,
+        x,
+        y,
+        width,
+        height,
+        dx = -12,
+        dy = 0,
+        floorHeight = Constants.FLOORHEIGHT,
+        type = 'boss projectile'
+    ) {
+        super(imageObject, x, y, imageObject.width, imageObject.height, dx, dy = 0, floorHeight = Constants.FLOORHEIGHT);
+        this.hit = false;
+        this.frameSpeed = 3;
+        this.type = type;
+    }
+
+    update(){
+        this.draw();
+        this.move();
+
+        if (this.checkFrame(this.frameSpeed)) {
+            this.changeFrame(this.imageObject.image);
+
+        }
+        this.increaseCounter();
+
+    }
+
+}
