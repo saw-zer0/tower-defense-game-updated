@@ -174,7 +174,7 @@ class Boss extends Enemy{
     ) {
         super(imageObject, x, y, imageObject.width, imageObject.height, dx, dy = 0, floorHeight = Constants.FLOORHEIGHT);
         this.dead = false;
-        this.hitPoint = 2;
+        this.hitPoint = 10;
         this.stuck;
         this.type = type;
         this.punchCount = 0;
@@ -232,7 +232,7 @@ class BossProjectile extends Animatable{
         y,
         width,
         height,
-        dx = -12,
+        dx = -15,
         dy = 0,
         floorHeight = Constants.FLOORHEIGHT,
         type = 'boss projectile'

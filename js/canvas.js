@@ -75,7 +75,7 @@ class Canvas {
         this.enemiesArr = [];
         this.obstacleArr = [];
         this.bossProjectileArr = [];
-        this.bossLevel = false;
+        this.bossLevel = true;
         this.enemyCount = 0;
         this.generateEnemyCounter = 1;
         this.generateBlockCounter = 1;

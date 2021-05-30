@@ -96,7 +96,7 @@ class Bomb extends Projectile {
         super(imageObject, x, y, width, height, dx = 0, dy = 0, floorHeight = Constants.FLOORHEIGHT)
         this.type = 'bomb';
         this.dy -= 15;
-        this.dx = 8;
+        this.dx = 6;
         this.imagePosition = 0;
     }
 
