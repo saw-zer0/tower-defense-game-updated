@@ -78,6 +78,7 @@ class Canvas {
         this.bossLevel = false;
         this.enemyCount = 0;
         this.generateEnemyCounter = 1;
+        this.generateBlockCounter = 1;
 
         this.pickupGenerationCounter = 0;
 
@@ -288,10 +289,19 @@ class Canvas {
         if (boss.type === 'boss attack' && boss.attacked === undefined && boss.imagePositionIndex === 2) {
             this.generateBossProjectile(boss.x, boss.y);
             boss.attacked = true;
-            console.log(boss.noOfShot)
             boss.noOfShot--;
             if (boss.noOfShot === 0) {
-                boss.relocate(700, 100);
+                let x, y, floor = Math.round(Math.random());
+                if(this.obstacleArr.length === 2 && floor === 1){
+                    let obs = this.obstacleArr[1]
+                    x = obs.x + obs.width/2;
+                    boss.floorHeight = obs.y;
+                    y = boss.floorHeight - boss.height;
+                }else{
+                    x = getRandom(500, this.canvas.width - boss.width);
+                    y = boss.floorHeight - boss.height;
+                }
+                boss.relocate(x, y);
             }
             setTimeout(() => {
                 boss.attacked = undefined;
@@ -321,13 +331,24 @@ class Canvas {
     }
 
     conditionToGenerateBlocks() {
-        let blockPosArr = [
-            [600, 420, 1],
-            [900, 420, 0],
-        ];
+        if(!this.bossLevel){
+            return;
+        }
+        this.generateBlockCounter++;
+        if(this.generateBlockCounter % 480 === 0){
 
-        for (let i = 0; i < blockPosArr.length; i++) {
-            this.generateBlocks(blockPosArr[i][0], blockPosArr[i][1], blockPosArr[i][2]);
+            this.generateBlockCounter = 1;
+            if(this.obstacleArr.length >= 2){
+                this.obstacleArr.shift();
+            }
+
+            let type = Math.round(Math.random());
+            let x = getRandom(500, this.canvas.width - imagePosition.blocks[type][2]);
+            let y = getRandom(120, Constants.FLOORHEIGHT - imagePosition.blocks[type][3]);
+            console.log(type, x, y)
+            
+            this.generateBlocks(x, y, type);
+            
         }
     }
 
@@ -508,8 +529,9 @@ class Canvas {
         }
 
         if (this.bossLevel) {
+            this.conditionToGenerateBlocks();
             this.conditionToGenerateBossProjectile();
-            
+
 
             if (this.bossProjectileArr.length) {
                 this.bossProjectileArr.forEach(elem => {
@@ -531,6 +553,11 @@ class Canvas {
                         }
 
                     }
+                })
+            }
+            if(this.obstacleArr.length){
+                this.obstacleArr.forEach(elem => {
+                    elem.draw();
                 })
             }
         }

@@ -196,9 +196,9 @@ class Boss extends Enemy{
 
         }
 
-        if(this.type === 'boss attack' && this.noOfShot ==0){
-            console.log('new set')
-            this.noOfShot = Math.floor(getRandom(1,4));
+        if(this.type === 'boss attack' && this.noOfShot == 0){
+            this.noOfShot = Math.floor(getRandom(1,5));
+            this.noOfShot;
         }
 
 
