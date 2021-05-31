@@ -21,7 +21,7 @@ class Canvas {
         this.soundCrash = new Sound('./assets/crash.wav');
         this.image.src = './images/sprite-sheet.png'
         this.image.onload = () => {
-            // this.soundBackground.play()
+            this.soundBackground.play()
             this.drawBg();
             this.forceField = new Circle(-750, this.canvas.height / 1.5, this.canvas.width, 0, 0);
             this.generatePlayer();
@@ -32,10 +32,9 @@ class Canvas {
             let instructionBtn = document.getElementById('instruction-button');
             let restartBtn = document.getElementsByClassName('restart-button');
             let homeBtn = document.getElementsByClassName('home-button');
-            let nextBtn = document.getElementById('next-button');
             let startScreen = document.getElementById('start-screen');
             let instructionScreen = document.getElementById('instruction-screen');
-            let levelScreen = document.getElementById('level-clear-screen');
+            this.winScreen = document.getElementById('level-clear-screen');
             this.endScreen = document.getElementById('end-screen');
 
 
@@ -75,7 +74,7 @@ class Canvas {
         this.enemiesArr = [];
         this.obstacleArr = [];
         this.bossProjectileArr = [];
-        this.bossLevel = false;
+        this.bossLevel = true;
         this.enemyCount = 0;
         this.generateEnemyCounter = 1;
         this.generateBlockCounter = 1;
@@ -84,7 +83,8 @@ class Canvas {
 
         this.score = {
             'bigwolf': 0,
-            'drone': 0
+            'drone': 0,
+            'boss': 0,
         };
         this.slingShotCenter = [140, 164];
         this.targetRadius = 20;
@@ -246,13 +246,18 @@ class Canvas {
     }
 
     conditionToGenerateEnemy() {
-        //
+        
         if (this.enemyCount >= 30) { this.bossLevel = true }
         if (this.bossLevel) {
             if (this.bossGenerated === undefined) {
                 this.generateBoss();
                 this.bossGenerated = true;
             }
+            if (this.pickupGenerationCounter >= 100) {
+                this.generatePickUpEnemies();
+                this.pickupGenerationCounter = 0;
+            }
+            this.pickupGenerationCounter++;
             return;
         }
 
@@ -502,6 +507,22 @@ class Canvas {
                                 }
                                 this.score.drone += 1;
                                 this.soundCrash.play();
+                            }   else if(elem.type.slice(0,4) === 'boss'){
+                                this.soundCry.play();
+                                elem.damage();
+                                console.log(elem.hitPoint)
+                                if (elem.hitPoint === 0) {
+                                    this.score.boss += 1;
+                                }
+                                projectile.giveDamage = false;
+                                elem.dx = res.b1.vel.x;
+                                elem.dy = res.b1.vel.y;
+
+                                if(elem.hitPoint <= 0 ){
+                                    this.winScreen.style.display = 'flex'
+                                    this.stopAnimation = true;
+                                }
+
                             }
 
                         }
@@ -529,6 +550,7 @@ class Canvas {
         }
 
         if (this.bossLevel) {
+
             this.conditionToGenerateBlocks();
             this.conditionToGenerateBossProjectile();
 

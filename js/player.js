@@ -53,3 +53,11 @@ class Player extends Animatable {
         gfx.closePath();
     }
 }
+
+
+class Shield extends Box{
+    constructor(x1, y1, x2, y2, w, dx, dy){
+        super(x1, y1, x2, y2, w, dx, dy);
+        
+    }
+}
