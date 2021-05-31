@@ -12,9 +12,9 @@ class Canvas {
 
     init() {
         this.image = new Image();
-        this.soundBackground = new Sound('../assets/background.wav');
+        this.soundBackground = new Sound('./assets/background.wav');
         this.soundBackground.sound.loop = true;
-        this.soundExplode = new Sound('../assets/bomb.wav');
+        this.soundExplode = new Sound('./assets/bomb.wav');
         this.soundSwosh = new Sound('./assets/swoosh.wav');
         this.soundSlash = new Sound('./assets/slash.mp3');
         this.soundCry = new Sound('./assets/cry.wav');
@@ -58,7 +58,7 @@ class Canvas {
                 elem.addEventListener('click', () => {
                     startScreen.style.display = 'flex';
                     instructionScreen.style.display = 'none';
-                    winScreen.style.display = 'none';
+                    this.winScreen.style.display = 'none';
                     this.endScreen.style.display = 'none';
                 })
             })
@@ -81,6 +81,7 @@ class Canvas {
         this.enemiesArr = [];
         this.obstacleArr = [];
         this.bossProjectileArr = [];
+        this.bossGenerated = undefined;
         this.enemyCount = 0;
         this.generateEnemyCounter = 1;
         this.generateBlockCounter = 1;
@@ -101,7 +102,6 @@ class Canvas {
         this.targetCurson.lineWidth = 3;
         this.forceField.health = 150;
         this.refreshScreen();
-
 
 
     }
@@ -153,7 +153,7 @@ class Canvas {
         if (this.bombTimeout === true) { return }
         setTimeout(() => {
             this.bombTimeout = false;
-        }, 100);
+        }, 5000);
         this.bombTimeout = true;
         let p = imagePosition.bomb[0];
         let x = p[0];
@@ -259,11 +259,6 @@ class Canvas {
                 this.generateBoss();
                 this.bossGenerated = true;
             }
-            if (this.pickupGenerationCounter >= 100) {
-                this.generatePickUpEnemies();
-                this.pickupGenerationCounter = 0;
-            }
-            this.pickupGenerationCounter++;
             return;
         }
 
@@ -296,8 +291,12 @@ class Canvas {
     }
 
     conditionToGenerateBossProjectile() {
+        if(this.enemiesArr.length === 0){
+            return;
+        }
         let boss = this.enemiesArr[this.enemiesArr.length - 1];
         if (boss.type === 'boss attack' && boss.attacked === undefined && boss.imagePositionIndex === 2) {
+
             this.generateBossProjectile(boss.x, boss.y);
             boss.attacked = true;
             boss.noOfShot--;

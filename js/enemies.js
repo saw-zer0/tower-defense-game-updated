@@ -205,6 +205,7 @@ class Boss extends Enemy{
         if (this.checkFrame(this.frameSpeed)) {
             this.changeFrame(this.imageObject.image);
             this.imagePositionIndex = (this.imagePositionIndex >= imagePosition['boss attack'].length - 1 ) ? 0 : this.imagePositionIndex+1;
+
         }
         this.increaseCounter();
     }
