@@ -58,7 +58,7 @@ class Canvas {
                 elem.addEventListener('click', () => {
                     startScreen.style.display = 'flex';
                     instructionScreen.style.display = 'none';
-                    levelScreen.style.display = 'none';
+                    winScreen.style.display = 'none';
                     this.endScreen.style.display = 'none';
                 })
             })
