@@ -10,7 +10,7 @@
 body{
     width: 100vw;
     height: 100vh;
-    background-image: url(../images/00e9f9b79f5f1d512fce94a306c63ae3.jpg);
+    background-image: url(./images/00e9f9b79f5f1d512fce94a306c63ae3.jpg);
     background-repeat: no-repeat;
     background-position: top left;
     background-size: cover;
@@ -22,6 +22,7 @@ body{
     height: 100%;
     background-image: linear-gradient(rgb(255, 255, 255, 20%), rgb(170, 68, 0, 40%), rgb(187, 0, 51, 70%));
     position: absolute;
+    
 }
 .screen{
     background-color: rgba(190, 150, 150, 50%);
