@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -21,19 +22,26 @@
     <script src="./js/projectile.js" defer></script>
     <script src="./js/enemies.js" defer></script>
     <script src="./js/render.js" defer></script>
-    
+
     <script src="./js/index.js" defer></script>
 </head>
+
 <body>
     <div class="background"></div>
     <canvas id="canvas"></canvas>
 
+    
     <div id="start-screen" class="screen">
         <h2 class="message">Revenge <br> of the <br> Pigs</h2>
         <button id="start-button">Start Game</button>
         <button id="instruction-button">Instructions</button>
+        <div id="boss-level-input">
+            <label for="boss-level">Enable Boss Level
+                <input type="checkbox" name="enable-boss-level" id="boss-level">
+            </label>
+        </div>
     </div>
-    <div id="end-screen"class="screen">
+    <div id="end-screen" class="screen">
         <h2 class="message">The Wolves got into your Home <br> and ate YOU...</h2>
         <h3 class="message">Play Again?</h3>
         <button class="restart-button">Yes</button>
@@ -46,10 +54,12 @@
         <button class="home-button">Main menu</button>
 
     </div>
-    <div id="instruction-screen"class="screen">
+    <div id="instruction-screen" class="screen">
         <p class="instruction">Click left button and drag on slingshot to aim <br> Release To Fire</p>
         <p class="instruction">press Space Bar to fire Secondary weapon</p>
         <button class="home-button">Main Menu</button>
     </div>
+
 </body>
+
 </html>

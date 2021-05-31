@@ -32,6 +32,7 @@ class Canvas {
             let instructionBtn = document.getElementById('instruction-button');
             let restartBtn = document.getElementsByClassName('restart-button');
             let homeBtn = document.getElementsByClassName('home-button');
+            let bossCheckBox = document.getElementById('boss-level');
             let startScreen = document.getElementById('start-screen');
             let instructionScreen = document.getElementById('instruction-screen');
             this.winScreen = document.getElementById('level-clear-screen');
@@ -39,6 +40,11 @@ class Canvas {
 
 
             startBtn.addEventListener('click', () => {
+                if(bossCheckBox.checked){
+                    this.bossLevel = true;
+                }else{
+                    this.bossLevel = false;
+                }
                 this.startGame();
                 startScreen.style.display = 'none';
             })
@@ -63,6 +69,7 @@ class Canvas {
                     this.startGame();
                 })
             })
+
         }
     }
 
@@ -74,7 +81,6 @@ class Canvas {
         this.enemiesArr = [];
         this.obstacleArr = [];
         this.bossProjectileArr = [];
-        this.bossLevel = true;
         this.enemyCount = 0;
         this.generateEnemyCounter = 1;
         this.generateBlockCounter = 1;
